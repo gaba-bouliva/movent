@@ -20,5 +20,5 @@ func (app *application) router() http.Handler {
 
 	r.Mount("/api/", apiV1)
 
-	return r
+	return app.recoverPanic(r)
 }
