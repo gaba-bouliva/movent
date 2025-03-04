@@ -21,10 +21,10 @@ RETURNING id, created_at, title, year, runtime, genres
 `
 
 type CreateMovieParams struct {
-	Title   string
-	Year    int32
-	Runtime int32
-	Genres  []string
+	Title   string   `json:"title"`
+	Year    int32    `json:"year"`
+	Runtime Runtime  `json:"runtime"`
+	Genres  []string `json:"genres"`
 }
 
 func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie, error) {
@@ -46,13 +46,13 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 	return i, err
 }
 
-const deleteAuthor = `-- name: DeleteAuthor :exec
+const deleteMovie = `-- name: DeleteMovie :exec
 DELETE FROM movies
 WHERE id = $1
 `
 
-func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
+func (q *Queries) DeleteMovie(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteMovie, id)
 	return err
 }
 
@@ -120,11 +120,11 @@ WHERE id = $1
 `
 
 type UpdateMovieParams struct {
-	ID      int64
-	Title   string
-	Year    int32
-	Runtime int32
-	Genres  []string
+	ID      int64    `json:"id"`
+	Title   string   `json:"title"`
+	Year    int32    `json:"year"`
+	Runtime Runtime  `json:"runtime"`
+	Genres  []string `json:"genres"`
 }
 
 func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) error {

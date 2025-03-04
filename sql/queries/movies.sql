@@ -22,6 +22,6 @@ UPDATE movies
   genres = $5
 WHERE id = $1;
 
--- name: DeleteAuthor :exec
+-- name: DeleteMovie :exec
 DELETE FROM movies
 WHERE id = $1;
