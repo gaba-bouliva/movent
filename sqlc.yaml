@@ -6,3 +6,9 @@ sql:
     gen:
       go:
         out: "internal/data"
+        emit_json_tags: true
+        overrides:
+          - column: "movies.runtime" # Specific column to override
+            go_type:
+              # import: "internal/data" // in case custom type exists in another package
+              type: "Runtime"
