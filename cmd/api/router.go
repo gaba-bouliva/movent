@@ -9,6 +9,9 @@ import (
 func (app *application) router() http.Handler {
 	r := chi.NewRouter()
 
+	r.NotFound(app.notFoundResponse)
+	r.MethodNotAllowed(app.methodNotAllowedResponse)
+
 	apiV1 := chi.NewRouter()
 	apiV1.Get("/v1/healthcheck", app.handleHealthcheck)
 	apiV1.Post("/v1/movies", app.handleCreateMovie)
