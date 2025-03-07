@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+var ErrInvalidRuntimeFormat = errors.New("invalid runtime format")
+
 type Runtime struct {
 	value int32
 }
@@ -19,14 +21,14 @@ func (r Runtime) MarshalJSON() ([]byte, error) {
 }
 
 func (r *Runtime) UnmarshalJSON(data []byte) error {
-	splits := strings.Split(string(data), " ")
-	if len(splits) != 2 {
-		return errors.New("error parsing json invalid runtime")
+	inputStr := strings.Trim(string(data), "\"")
+	splits := strings.Split(inputStr, " ")
+	if len(splits) != 2 || splits[1] != "mins" {
+		return ErrInvalidRuntimeFormat
 	}
-
 	newValue, err := strconv.Atoi(splits[0])
 	if err != nil {
-		return fmt.Errorf("error marshaling invalid runtime %+v", *r)
+		return ErrInvalidRuntimeFormat
 	}
 
 	r.value = int32(newValue)
