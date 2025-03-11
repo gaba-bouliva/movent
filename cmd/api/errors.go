@@ -15,7 +15,7 @@ func (app *application) logError(r *http.Request, err error) {
 }
 
 func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, message any, status int) {
-	err := app.writeJSON(w, jsonPayload{"message": message}, status, nil)
+	err := app.writeJSON(w, jsonPayload{"error": message}, status, nil)
 	if err != nil {
 		app.logError(r, err)
 		w.WriteHeader(500)
