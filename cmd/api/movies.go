@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gaba-bouliva/movent/internal/data"
 	"github.com/gaba-bouliva/movent/internal/validator"
@@ -22,21 +21,15 @@ func (app *application) handleCreateMovie(w http.ResponseWriter, r *http.Request
 		return
 	}
 	// validate the data in body
+
+	movie := data.Movie{
+		Title:   reqBody.Title,
+		Year:    reqBody.Year,
+		Runtime: reqBody.Runtime,
+		Genres:  reqBody.Genres,
+	}
 	v := validator.New()
-	v.Check(reqBody.Title != "", "title", "must be provided")
-	v.Check(len(reqBody.Title) <= 500, "title", "must not be more than 500 bytes long")
-
-	v.Check(reqBody.Year != 0, "year", "must be provided")
-	v.Check(reqBody.Year >= 1888, "year", "must be greater than 1888")
-	v.Check(reqBody.Year <= int32(time.Now().Year()), "year", "must not be in the future")
-
-	v.Check(reqBody.Runtime.Minutes != 0, "runtime", "must be provided")
-	v.Check(reqBody.Runtime.Minutes > 0, "runtime", "must be a positive integer")
-
-	v.Check(reqBody.Genres != nil, "genres", "must be provided")
-	v.Check(len(reqBody.Genres) >= 1, "genres", "must contain at least 1 genre")
-	v.Check(len(reqBody.Genres) <= 5, "genres", "must not contain more than 5 genres")
-	v.Check(validator.Unique(reqBody.Genres), "genres", "must not contain duplicate values")
+	data.ValidateMovie(v, &movie)
 
 	if !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
@@ -97,6 +90,63 @@ func (app *application) handleGetMovies(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		app.logger.Error(err.Error())
 		// http.Error(w, "server encountered an error", http.StatusInternalServerError)
+		app.serverErrorReponse(w, r, err)
+	}
+}
+
+func (app *application) handleUpdateMovie(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	movie, err := app.db.GetMovie(r.Context(), id)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	var reqBody struct {
+		Title   string       `json:"title"`
+		Year    int32        `json:"year"`
+		Runtime data.Runtime `json:"runtime"`
+		Genres  []string     `json:"genres"`
+	}
+	err = app.readJSON(w, r, &reqBody)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	movie.Title = reqBody.Title
+	movie.Year = reqBody.Year
+	movie.Runtime = reqBody.Runtime
+	movie.Genres = reqBody.Genres
+
+	v := validator.New()
+	data.ValidateMovie(v, &movie)
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	updateMovieParams := data.UpdateMovieParams{
+		Title:   movie.Title,
+		Year:    movie.Year,
+		Runtime: movie.Runtime,
+		Genres:  movie.Genres,
+	}
+
+	err = app.db.UpdateMovie(r.Context(), updateMovieParams)
+	if err != nil {
+		app.serverErrorReponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, jsonPayload{"message": "movie updated successfully"}, http.StatusAccepted, nil)
+	if err != nil {
 		app.serverErrorReponse(w, r, err)
 	}
 }
