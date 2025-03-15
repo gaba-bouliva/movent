@@ -100,3 +100,28 @@ func (app *application) handleGetMovies(w http.ResponseWriter, r *http.Request) 
 		app.serverErrorReponse(w, r, err)
 	}
 }
+
+func (app *application) handleDeleteMovie(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	_, err = app.db.GetMovie(r.Context(), id)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.db.DeleteMovie(r.Context(), id)
+	if err != nil {
+		app.serverErrorReponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, jsonPayload{"message": "movie deleted successfully"}, http.StatusNoContent, nil)
+	if err != nil {
+		app.serverErrorReponse(w, r, err)
+		return
+	}
+}

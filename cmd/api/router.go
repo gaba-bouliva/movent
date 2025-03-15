@@ -17,6 +17,7 @@ func (app *application) router() http.Handler {
 	apiV1.Post("/v1/movies", app.handleCreateMovie)
 	apiV1.Get("/v1/movies/{id}", app.handleGetMovie)
 	apiV1.Get("/v1/movies", app.handleGetMovies)
+	apiV1.Delete("/v1/movies/{id}", app.handleDeleteMovie)
 
 	r.Mount("/api/", apiV1)
 

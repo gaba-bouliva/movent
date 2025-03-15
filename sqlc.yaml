@@ -10,5 +10,5 @@ sql:
         overrides:
           - column: "movies.runtime" # Specific column to override
             go_type:
-              # import: "internal/data" // in case custom type exists in another package
+              # import: "<package path>" // in case custom type exists in another package
               type: "Runtime"
